@@ -202,17 +202,7 @@ This project was created as part of an internship technical assessment.
 
 ---
 
-## 🤝 Acknowledgments
-
-- Product images sourced from [source]
-- Inspired by modern e-commerce platforms
----
-
 ## 📞 Contact
 
 For questions or feedback, please contact:
 - Email: tasnimtouati301@gmail.com - sallamihawraa@gmail.com
-
----
-
-**Last Updated**: January 2026
