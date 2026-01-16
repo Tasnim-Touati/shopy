@@ -1,3 +1,4 @@
+// src/controllers/order.controller.js
 import {
   calculateOrderPreview,
   createOrder,
@@ -14,6 +15,13 @@ export const previewOrderController = (req, res) => {
     const orderPreview = calculateOrderPreview(cart);
     res.json(orderPreview);
   } catch (err) {
+    // Check if error has stockIssues
+    if (err.stockIssues) {
+      return res.status(400).json({
+        message: err.message,
+        stockIssues: err.stockIssues,
+      });
+    }
     res.status(400).json({ message: err.message });
   }
 };
@@ -30,6 +38,13 @@ export const createOrderController = (req, res) => {
     const order = createOrder(cart);
     res.status(201).json(order);
   } catch (err) {
+    // Check if error has stockIssues
+    if (err.stockIssues) {
+      return res.status(400).json({
+        message: err.message,
+        stockIssues: err.stockIssues,
+      });
+    }
     res.status(400).json({ message: err.message });
   }
 };

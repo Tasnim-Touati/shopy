@@ -13,6 +13,11 @@ const CartPage = () => {
   const [removingId, setRemovingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Stock dialog states
+  const [showStockDialog, setShowStockDialog] = useState(false);
+  const [stockIssues, setStockIssues] = useState([]);
+
+  // Preview order effect - runs when cart changes (NO STOCK VALIDATION HERE)
   useEffect(() => {
     if (cart.length === 0) {
       setOrder(null);
@@ -32,7 +37,24 @@ const CartPage = () => {
       })
       .catch((err) => {
         console.error(err);
-        toast.error(err.response?.data?.message || "Erreur lors du calcul");
+        // If there are stock issues in preview, ignore them
+        // We only care about stock when user clicks checkout
+        if (err.response?.data?.stockIssues) {
+          // Calculate total manually for display
+          let total = 0;
+          const items = cart.map((item) => {
+            const subTotal = item.price * item.quantity;
+            total += subTotal;
+            return {
+              productId: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              subTotal,
+            };
+          });
+          setOrder({ items, total });
+        }
         setLoading(false);
       });
   }, [cart]);
@@ -49,6 +71,7 @@ const CartPage = () => {
     setIsSubmitting(true);
 
     try {
+      // Try to submit order
       const orderData = await submitOrder({
         cart: cart.map((item) => ({
           productId: item.id,
@@ -68,10 +91,71 @@ const CartPage = () => {
         navigate("/");
       }, 2000);
     } catch (err) {
+      console.error("Checkout error:", err);
+
+      // Check if it's a stock issue
+      if (err.response?.data?.stockIssues) {
+        const issues = err.response.data.stockIssues;
+        setStockIssues(issues);
+        setShowStockDialog(true);
+        setIsSubmitting(false);
+      } else {
+        toast.error(
+          err.response?.data?.message || "Erreur lors de la commande",
+        );
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const handleProceedWithAvailable = async () => {
+    setShowStockDialog(false);
+    setIsSubmitting(true);
+
+    try {
+      // Create new cart with adjusted quantities
+      const adjustedCart = cart
+        .map((item) => {
+          const issue = stockIssues.find((i) => i.productId === item.id);
+          if (issue) {
+            return {
+              productId: item.id,
+              quantity: issue.available,
+            };
+          }
+          return {
+            productId: item.id,
+            quantity: item.quantity,
+          };
+        })
+        .filter((item) => item.quantity > 0); // Remove items with 0 stock
+
+      // Submit order with adjusted quantities
+      const orderData = await submitOrder({
+        cart: adjustedCart,
+      });
+
+      toast.success(`Commande confirmée! N° ${orderData.orderId}`, {
+        duration: 5000,
+        icon: "✅",
+      });
+
+      clearCart();
+
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (err) {
       toast.error(err.response?.data?.message || "Erreur lors de la commande");
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCancelOrder = () => {
+    setShowStockDialog(false);
+    setStockIssues([]);
+    setIsSubmitting(false);
   };
 
   if (loading)
@@ -188,6 +272,52 @@ const CartPage = () => {
           {isSubmitting ? "Commande en cours..." : "Procéder au paiement 🔒"}
         </button>
       </div>
+
+      {/* Stock Validation Dialog */}
+      {showStockDialog && (
+        <div className="stock-dialog-overlay">
+          <div className="stock-dialog">
+            <h2>⚠️ Stock insuffisant</h2>
+            <p>Certains produits n'ont pas le stock demandé :</p>
+
+            <div className="stock-issues-list">
+              {stockIssues.map((issue) => {
+                const cartItem = cart.find((c) => c.id === issue.productId);
+                return (
+                  <div key={issue.productId} className="stock-issue-item">
+                    <strong>{issue.productName || cartItem?.name}</strong>
+                    <div className="stock-info">
+                      <span className="requested">
+                        Demandé: {issue.requested}
+                      </span>
+                      <span className="available">
+                        Disponible: {issue.available}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="dialog-question">
+              Voulez-vous procéder avec les quantités disponibles ?
+            </p>
+
+            <div className="dialog-actions">
+              <button onClick={handleCancelOrder} className="btn-cancel">
+                Non, annuler
+              </button>
+              <button
+                onClick={handleProceedWithAvailable}
+                className="btn-confirm"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Traitement..." : "Oui, continuer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

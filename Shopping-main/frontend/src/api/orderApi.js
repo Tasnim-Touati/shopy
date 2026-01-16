@@ -1,9 +1,10 @@
+// src/api/orderApi.js
 import axios from "axios";
 
 export const previewOrder = async (payload) => {
   const res = await axios.post(
     "http://localhost:3001/api/orders/preview",
-    payload
+    payload,
   );
   return res.data;
 };
@@ -12,7 +13,7 @@ export const previewOrder = async (payload) => {
 export const submitOrder = async (payload) => {
   const res = await axios.post(
     "http://localhost:3001/api/orders/create",
-    payload
+    payload,
   );
   return res.data;
 };
