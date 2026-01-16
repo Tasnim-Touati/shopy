@@ -10,7 +10,7 @@ export const products = [
     id: 2,
     name: "Casque Audio",
     price: 150,
-    stock: 3,
+    stock: 2,
     image: "/assets/headphones.jpg",
   },
   {
