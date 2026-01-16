@@ -149,7 +149,7 @@ No environment variables are required for basic setup. The application uses hard
 
 ## 📡 API Documentation
 
-See [Backend README](./backend/README.md) for detailed API documentation.
+See [Backend README](./Shopping-main/backend/README.md) for detailed API documentation.
 
 ### Quick Reference
 
