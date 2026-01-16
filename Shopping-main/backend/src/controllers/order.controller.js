@@ -1,8 +1,35 @@
-// src/controllers/order.controller.js
-import { calculateOrder } from "../services/order.service.js";
+import {
+  calculateOrderPreview,
+  createOrder,
+} from "../services/order.service.js";
 
-export const previewOrder = (req, res) => {
-  const { cart } = req.body;
-  const order = calculateOrder(cart);
-  res.json(order);
+export const previewOrderController = (req, res) => {
+  try {
+    const { cart } = req.body;
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(400).json({ message: "Le panier est vide" });
+    }
+
+    const orderPreview = calculateOrderPreview(cart);
+    res.json(orderPreview);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// NEW: Controller for creating the actual order
+export const createOrderController = (req, res) => {
+  try {
+    const { cart } = req.body;
+
+    if (!cart || !Array.isArray(cart) || cart.length === 0) {
+      return res.status(400).json({ message: "Le panier est vide" });
+    }
+
+    const order = createOrder(cart);
+    res.status(201).json(order);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 };

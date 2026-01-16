@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
-import { previewOrder } from "../api/orderApi";
+import { previewOrder, submitOrder } from "../api/orderApi";
+import toast from "react-hot-toast";
 import "./CartPage.css";
 
 const CartPage = () => {
@@ -10,6 +11,7 @@ const CartPage = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [removingId, setRemovingId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (cart.length === 0) {
@@ -30,6 +32,7 @@ const CartPage = () => {
       })
       .catch((err) => {
         console.error(err);
+        toast.error(err.response?.data?.message || "Erreur lors du calcul");
         setLoading(false);
       });
   }, [cart]);
@@ -40,6 +43,35 @@ const CartPage = () => {
       removeFromCart(productId);
       setRemovingId(null);
     }, 300);
+  };
+
+  const handleCheckout = async () => {
+    setIsSubmitting(true);
+
+    try {
+      const orderData = await submitOrder({
+        cart: cart.map((item) => ({
+          productId: item.id,
+          quantity: item.quantity,
+        })),
+      });
+
+      toast.success(`Commande confirmée! N° ${orderData.orderId}`, {
+        duration: 5000,
+        icon: "✅",
+      });
+
+      clearCart();
+
+      // Redirect to home after 2 seconds
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Erreur lors de la commande");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (loading)
@@ -97,7 +129,7 @@ const CartPage = () => {
               }`}
             >
               <img
-                src={cartItem?.image || "./assets/placeholder.jpg"}
+                src={cartItem?.image || "/assets/placeholder.jpg"}
                 alt={item.name}
                 className="cart-item-image"
               />
@@ -148,7 +180,13 @@ const CartPage = () => {
           <span>Total</span>
           <span className="total-amount">{order.total} €</span>
         </div>
-        <button className="checkout-btn">Procéder au paiement 🔒</button>
+        <button
+          className="checkout-btn"
+          onClick={handleCheckout}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Commande en cours..." : "Procéder au paiement 🔒"}
+        </button>
       </div>
     </div>
   );

@@ -7,3 +7,12 @@ export const previewOrder = async (payload) => {
   );
   return res.data;
 };
+
+// NEW: Submit the actual order
+export const submitOrder = async (payload) => {
+  const res = await axios.post(
+    "http://localhost:3001/api/orders/create",
+    payload
+  );
+  return res.data;
+};
