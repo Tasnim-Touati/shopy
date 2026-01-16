@@ -212,7 +212,6 @@ This project was created as part of an internship technical assessment.
 
 For questions or feedback, please contact:
 - Email: tasnimtouati301@gmail.com - sallamihawraa@gmail.com
-- GitHub: [@Tasnim-Touati](https://github.com/Tasnim-Touati)
 
 ---
 
