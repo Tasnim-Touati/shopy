@@ -1,0 +1,35 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+
+  background-color: #FAF7F2;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+}
+
+.cart-icon {
+  position: relative;
+  font-size: 20px;
+  color: #111827;
+  text-decoration: none;
+}
+
+.badge {
+  position: absolute;
+  top: -8px;
+  right: -10px;
+
+  background-color: #C2410C;
+  color: white;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 999px;
+}

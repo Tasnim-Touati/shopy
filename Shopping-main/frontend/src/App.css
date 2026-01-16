@@ -1,0 +1,44 @@
+/* =========================
+   LAYOUT GLOBAL
+   ========================= */
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================
+   CONTENU PRINCIPAL
+   ========================= */
+
+.main-content {
+  flex: 1;
+  padding-top: 80px; /* espace sous la navbar */
+}
+
+/* =========================
+   PAGE WRAPPER
+   ========================= */
+
+.page {
+  width: 100%;
+}
+
+/* =========================
+   UTILITAIRES
+   ========================= */
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-bold {
+  font-weight: 600;
+}
