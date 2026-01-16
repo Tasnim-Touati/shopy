@@ -2,7 +2,7 @@
 
 A full-stack e-commerce application built with React and Node.js, featuring product browsing, shopping cart management, and order processing with real-time stock validation.
 
-![Application Screenshot](screenshot.png)
+![Application Screenshot](Website.png)
 
 ## 📋 Table of Contents
 - [Overview](#overview)
