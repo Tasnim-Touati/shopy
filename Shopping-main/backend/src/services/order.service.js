@@ -1,9 +1,9 @@
-// src/services/order.service.js
 import { products } from "../data/products.js";
 
+// Calcule un aperçu de la commande sans modifier le stock
 export const calculateOrderPreview = (cart) => {
   let total = 0;
-  const stockIssues = []; // Track all stock issues
+  const stockIssues = [];
 
   const items = cart.map((item) => {
     const product = products.find((p) => p.id === item.productId);
@@ -12,7 +12,7 @@ export const calculateOrderPreview = (cart) => {
       throw new Error(`Produit ${item.productId} introuvable`);
     }
 
-    // Check stock but don't throw error yet - collect all issues
+    // Collecte les problèmes de stock sans bloquer
     if (product.stock < item.quantity) {
       stockIssues.push({
         productId: product.id,
@@ -34,7 +34,7 @@ export const calculateOrderPreview = (cart) => {
     };
   });
 
-  // If there are stock issues, throw error with all issues
+  // Lance une erreur si stock insuffisant
   if (stockIssues.length > 0) {
     const error = new Error("Stock insuffisant pour certains produits");
     error.stockIssues = stockIssues;
@@ -44,13 +44,13 @@ export const calculateOrderPreview = (cart) => {
   return { items, total };
 };
 
-// NEW: Actually create the order and update stock
+// Crée la commande et met à jour le stock
 export const createOrder = (cart) => {
-  // First validate everything (same as preview)
   let total = 0;
   const items = [];
   const stockIssues = [];
 
+  // Validation des produits et du stock
   for (const item of cart) {
     const product = products.find((p) => p.id === item.productId);
 
@@ -58,7 +58,6 @@ export const createOrder = (cart) => {
       throw new Error(`Produit ${item.productId} introuvable`);
     }
 
-    // Check stock and collect issues
     if (product.stock < item.quantity) {
       stockIssues.push({
         productId: product.id,
@@ -80,20 +79,20 @@ export const createOrder = (cart) => {
     });
   }
 
-  // If there are stock issues, throw error with all issues
+  // Lance une erreur si stock insuffisant
   if (stockIssues.length > 0) {
     const error = new Error("Stock insuffisant pour certains produits");
     error.stockIssues = stockIssues;
     throw error;
   }
 
-  // If we got here, everything is valid - now update stock
+  // Met à jour le stock des produits
   for (const item of cart) {
     const product = products.find((p) => p.id === item.productId);
     product.stock -= item.quantity;
   }
 
-  // Generate order confirmation
+  // Génère la confirmation de commande
   const order = {
     orderId: `ORD-${Date.now()}`,
     items,

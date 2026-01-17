@@ -1,13 +1,16 @@
-// src/routes/order.routes.js
 import express from "express";
 import {
   previewOrderController,
   createOrderController,
 } from "../controllers/order.controller.js";
 
+// Crée un routeur Express pour les commandes
 const router = express.Router();
 
+// Route pour prévisualiser une commande (calcul sans validation finale)
 router.post("/preview", previewOrderController);
-router.post("/create", createOrderController); // NEW endpoint
+
+// Route pour créer une commande (validation et mise à jour du stock)
+router.post("/create", createOrderController);
 
 export default router;
