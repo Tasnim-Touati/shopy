@@ -1,4 +1,3 @@
-// src/routes/order.routes.js
 import express from "express";
 import {
   previewOrderController,
