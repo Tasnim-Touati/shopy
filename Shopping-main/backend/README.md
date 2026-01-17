@@ -1,88 +1,45 @@
 # 🖥️ Backend API - Shopping Application
 
-Node.js/Express REST API for the e-commerce shopping application.
+RESTful API built with Node.js and Express for e-commerce order management.
 
-## 📋 Overview
-
-This backend provides a RESTful API for managing products and orders. It uses an in-memory data store for products and implements comprehensive validation for order processing.
-
-**Port**: `3001`  
 **Base URL**: `http://localhost:3001/api`
+
+---
+
+## 🚀 Quick Start
+```bash
+npm install
+npm run dev    # Development with auto-reload
+npm start      # Production
+```
 
 ---
 
 ## 🏗️ Architecture
 
-### Layered Architecture Pattern
-
+Layered architecture for separation of concerns:
 ```
-┌─────────────────────────────────────┐
-│         Routes Layer                │  HTTP routing
-├─────────────────────────────────────┤
-│       Controllers Layer             │  Request/Response handling
-├─────────────────────────────────────┤
-│        Services Layer               │  Business logic
-├─────────────────────────────────────┤
-│      Repositories Layer             │  Data access
-├─────────────────────────────────────┤
-│         Data Layer                  │  In-memory storage
-└─────────────────────────────────────┘
+Routes → Controllers → Services → Repositories → Data
 ```
 
-**Benefits**:
-- **Separation of Concerns**: Each layer has a single responsibility
-- **Maintainability**: Easy to locate and modify specific functionality
-- **Testability**: Layers can be tested independently
-- **Scalability**: Easy to add new features or swap implementations
-
----
-
-## 📁 Project Structure
-
-```
-backend/
-├── src/
-│   ├── controllers/           # Handle HTTP requests/responses
-│   │   ├── order.controller.js
-│   │   └── product.controller.js
-│   │
-│   ├── services/              # Business logic
-│   │   ├── order.service.js
-│   │   └── product.service.js
-│   │
-│   ├── repositories/          # Data access layer
-│   │   ├── order.repository.js
-│   │   └── product.repository.js
-│   │
-│   ├── routes/                # API route definitions
-│   │   ├── order.routes.js
-│   │   └── product.routes.js
-│   │
-│   ├── validators/            # Input validation
-│   │   └── order.validator.js
-│   │
-│   ├── data/                  # In-memory data storage
-│   │   └── products.js
-│   │
-│   ├── app.js                 # Express app configuration
-│   └── server.js              # Application entry point
-│
-├── package.json
-└── README.md
-```
+- **Routes**: HTTP endpoint definitions
+- **Controllers**: Request/response handling
+- **Services**: Business logic and validation
+- **Repositories**: Data access layer
+- **Data**: In-memory storage
 
 ---
 
 ## 🔌 API Endpoints
 
-### Products
+### 📦 Products
 
-#### Get All Products
+**Get all products**
 ```http
 GET /api/products
 ```
 
-**Response** (200 OK):
+Response (200):
 ```json
 [
   {
@@ -90,41 +47,30 @@ GET /api/products
     "name": "Laptop Pro",
     "price": 1299.99,
     "stock": 10,
-    "image": "/assets/laptop.jpg",
-    "description": "High-performance laptop"
-  },
-  ...
+    "image": "/assets/laptop.jpg"
+  }
 ]
 ```
 
 ---
 
-### Orders
+### 🛍️ Orders
 
-#### Preview Order
-Validates cart items and calculates total without creating an order.
-
+**Preview order** - Validates cart without stock updates
 ```http
 POST /api/orders/preview
 ```
 
-**Request Body**:
+Request:
 ```json
 {
   "cart": [
-    {
-      "productId": 1,
-      "quantity": 2
-    },
-    {
-      "productId": 3,
-      "quantity": 1
-    }
+    { "productId": 1, "quantity": 2 }
   ]
 }
 ```
 
-**Success Response** (200 OK):
+Success (200):
 ```json
 {
   "items": [
@@ -140,7 +86,7 @@ POST /api/orders/preview
 }
 ```
 
-**Error Response - Insufficient Stock** (400 Bad Request):
+Error - Insufficient stock (400):
 ```json
 {
   "message": "Stock insuffisant pour certains produits",
@@ -155,61 +101,29 @@ POST /api/orders/preview
 }
 ```
 
-**Error Response - Invalid Product** (400 Bad Request):
-```json
-{
-  "message": "Produit 999 introuvable"
-}
-```
-
----
-
-#### Create Order
-Creates an order and updates product stock.
-
+**Create order** - Validates and updates stock
 ```http
 POST /api/orders/create
 ```
 
-**Request Body**:
-```json
-{
-  "cart": [
-    {
-      "productId": 1,
-      "quantity": 2
-    }
-  ]
-}
-```
+Request: Same as preview
 
-**Success Response** (201 Created):
+Success (201):
 ```json
 {
   "orderId": "ORD-1705420800000",
-  "items": [
-    {
-      "productId": 1,
-      "name": "Laptop Pro",
-      "quantity": 2,
-      "price": 1299.99,
-      "subTotal": 2599.98
-    }
-  ],
+  "items": [...],
   "total": 2599.98,
   "status": "confirmed",
   "createdAt": "2026-01-16T10:30:00.000Z"
 }
 ```
 
-**Error Responses**:
-Same as Preview Order endpoint, plus stock is permanently updated on success.
+Errors: Same as preview endpoint
 
 ---
 
-## 🔐 Validation Rules
-
-### Order Validation
+## ✅ Validation Rules
 
 **Cart Requirements**:
 - Must be a non-empty array
@@ -224,7 +138,7 @@ Same as Preview Order endpoint, plus stock is permanently updated on success.
 
 ---
 
-## 💾 Data Model
+## 💾 Data Models
 
 **Product**:
 ```typescript
@@ -250,47 +164,32 @@ Same as Preview Order endpoint, plus stock is permanently updated on success.
   }>
   total: number
   status: "confirmed"
-  createdAt: string        
+  createdAt: string        // ISO 8601
 }
 ```
 
 ---
 
-## 🚀 Running the Backend
-
-### Development Mode
-```bash
-npm run dev
+## 📁 Project Structure
 ```
-Uses nodemon for automatic restarts on file changes.
-
-### Production Mode
-```bash
-npm start
-```
-
-### Testing Endpoints
-
-**Using curl**:
-```bash
-# Get all products
-curl http://localhost:3001/api/products
-
-# Preview order
-curl -X POST http://localhost:3001/api/orders/preview \
-  -H "Content-Type: application/json" \
-  -d '{"cart":[{"productId":1,"quantity":2}]}'
-
-# Create order
-curl -X POST http://localhost:3001/api/orders/create \
-  -H "Content-Type: application/json" \
-  -d '{"cart":[{"productId":1,"quantity":2}]}'
+backend/
+├── src/
+│   ├── controllers/      # HTTP request handlers
+│   ├── services/         # Business logic
+│   ├── repositories/     # Data access
+│   ├── routes/           # Endpoint definitions
+│   ├── validators/       # Input validation
+│   ├── data/             # In-memory data
+│   ├── app.js            # Express app configuration
+│   └── server.js         # Application entry point
+└── package.json
 ```
 
+---
 
 ## 📦 Dependencies
 
-### Production
+**Production**:
 - `express` ^4.18.2 - Web framework
 - `cors` ^2.8.5 - CORS support
 
@@ -305,23 +204,38 @@ curl -X POST http://localhost:3001/api/orders/create \
 
 **CORS**: Configured for `http://localhost:5173` (frontend)
 
+---
+
+## 🧪 Testing
+
+**cURL Examples**:
+```bash
+# Get products
+curl http://localhost:3001/api/products
+
+# Preview order
+curl -X POST http://localhost:3001/api/orders/preview \
+  -H "Content-Type: application/json" \
+  -d '{"cart":[{"productId":1,"quantity":2}]}'
+
+# Create order
+curl -X POST http://localhost:3001/api/orders/create \
+  -H "Content-Type: application/json" \
+  -d '{"cart":[{"productId":1,"quantity":2}]}'
+```
 
 ---
 
-## 🚦 Future Improvements
+## 🚦 Roadmap
 
-- [ ] Database integration (MongoDB/PostgreSQL)
-- [ ] User authentication (JWT)
-- [ ] Order history storage
-- [ ] Payment gateway integration
+- [ ] Database integration (PostgreSQL/MongoDB)
+- [ ] JWT authentication
+- [ ] Order history persistence
+- [ ] Payment integration
 - [ ] Rate limiting
-- [ ] Request logging
 - [ ] Unit/integration tests
-- [ ] API versioning
-- [ ] Swagger/OpenAPI documentation
-
+- [ ] OpenAPI documentation
 
 ---
 
-**Maintained by**: [Hawra Sallami]  
-**Last Updated**: January 2026
+**📅 Last Updated**: January 2026
