@@ -6,11 +6,14 @@ import CartProvider from "./store/CartProvider";
 import App from "./App";
 import "./main.css";
 
+// Render the app with CartProvider and Toaster for notifications
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <CartProvider>
         <App />
+
+        {/* Toast notification container */}
         <Toaster
           position="top-right"
           toastOptions={{
@@ -32,5 +35,5 @@ createRoot(document.getElementById("root")).render(
         />
       </CartProvider>
     </BrowserRouter>
-  </StrictMode>
+  </StrictMode>,
 );

@@ -1,3 +1,4 @@
+// src/pages/CartPage.jsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
@@ -8,9 +9,11 @@ import "./CartPage.css";
 const CartPage = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
+
+  // Order preview data from backend (totals, item subtotals)
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [removingId, setRemovingId] = useState(null);
+  const [removingId, setRemovingId] = useState(null); // For animation when removing item
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Stock dialog states
@@ -37,8 +40,7 @@ const CartPage = () => {
       })
       .catch((err) => {
         console.error(err);
-        // If there are stock issues in preview, ignore them
-        // We only care about stock when user clicks checkout
+        // Fallback: create a manual order preview if API returns stock issues
         if (err.response?.data?.stockIssues) {
           // Calculate total manually for display
           let total = 0;
@@ -93,7 +95,7 @@ const CartPage = () => {
     } catch (err) {
       console.error("Checkout error:", err);
 
-      // Check if it's a stock issue
+      // Show stock issues dialog if backend indicates insufficient stock
       if (err.response?.data?.stockIssues) {
         const issues = err.response.data.stockIssues;
         setStockIssues(issues);
@@ -108,6 +110,7 @@ const CartPage = () => {
     }
   };
 
+  // Proceed with available quantities when some items are out of stock
   const handleProceedWithAvailable = async () => {
     setShowStockDialog(false);
     setIsSubmitting(true);
@@ -152,12 +155,14 @@ const CartPage = () => {
     }
   };
 
+  // Cancel order confirmation dialog
   const handleCancelOrder = () => {
     setShowStockDialog(false);
     setStockIssues([]);
     setIsSubmitting(false);
   };
 
+  // Render loading state
   if (loading)
     return (
       <div className="cart-container">
@@ -183,6 +188,7 @@ const CartPage = () => {
     );
   }
 
+  // Render cart items and summary
   return (
     <div className="cart-container">
       <div className="cart-header">

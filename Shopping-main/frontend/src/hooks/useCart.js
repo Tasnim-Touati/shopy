@@ -2,6 +2,7 @@
 import { useContext } from "react";
 import { CartContext } from "../store/CartContext";
 
+/* Custom hook to access cart state and actions*/
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
