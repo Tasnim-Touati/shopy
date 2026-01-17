@@ -1,5 +1,9 @@
 import { getAllProducts } from "../services/product.service.js";
 
+/**
+ * Récupère tous les produits
+ */
 export const getProducts = (req, res) => {
-  res.json(getAllProducts());
+  const products = getAllProducts();
+  res.json(products);
 };
