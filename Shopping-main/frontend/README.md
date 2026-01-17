@@ -153,27 +153,38 @@ const CartContext = createContext({
 ```
 User Action → Component → Hook → Context → Update State → Re-render
 ```
+---
+
+## 📋 Prerequisites
+
+- Node.js >= 16.x
+- npm >= 8.x
+- Backend server running on port 3001
 
 ---
 
 ## 🚀 Running the Frontend
 
-### Development Mode
+### Install Dependencies
+```bash
+cd frontend
+npm install
+```
+
+### Verify Backend Connection
+Make sure your backend is running
+```bash
+# In another terminal
+cd backend
+npm run dev
+# Should be running on http://localhost:3001
+```
+
+### Start Development Server
 ```bash
 npm run dev
 ```
-Runs on `http://localhost:5173` with hot module replacement.
-
-### Build for Production
-```bash
-npm run build
-```
-Outputs to `dist/` directory.
-
-### Preview Production Build
-```bash
-npm run preview
-```
+The app will open at http://localhost:5173
 
 ---
 
@@ -192,6 +203,22 @@ npm run preview
 
 ---
 
+## 🚦 Future Enhancements
+
+- [ ] User authentication
+- [ ] Order history page
+- [ ] Product search/filter
+- [ ] Sort options (price, name, stock)
+- [ ] Product details page
+- [ ] Wishlist feature
+- [ ] Multiple images per product
+- [ ] Reviews and ratings
+- [ ] Pagination for products
+- [ ] Dark mode toggle
+- [ ] Multi-language support (i18n)
+- [ ] PWA support
+
+---
 ## 📚 Learn More
 
 ### React Concepts Used
