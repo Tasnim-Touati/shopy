@@ -4,7 +4,7 @@ React-based frontend for the e-commerce shopping application with modern UI/UX a
 
 ## 📋 Overview
 
-A responsive, modern e-commerce interface built with React and Vite. Features include product browsing, cart management, and intelligent stock validation with user-friendly dialogs.
+A responsive, modern e-commerce interface built with React and Vite. Features include product browsing, detailed product pages, cart management, and intelligent stock validation with user-friendly dialogs.
 
 **Port**: `5173` (Vite default)  
 **URL**: `http://localhost:5173`
@@ -23,8 +23,12 @@ A responsive, modern e-commerce interface built with React and Vite. Features in
 ├────────────────────────────────────────┤
 │              Pages                     │
 │  ┌──────────────┐  ┌───────────────┐  │
-│  │ ProductList  │  │   CartPage    │  │
+│  │ ProductList  │  │ ProductDetail │  │
+│  │              │  │               │  │
 │  └──────────────┘  └───────────────┘  │
+│  ┌──────────────┐                     │
+│  │   CartPage   │                     │
+│  └──────────────┘                     │
 ├────────────────────────────────────────┤
 │           Components                   │
 │  ┌──────────────┐  ┌───────────────┐  │
@@ -49,10 +53,17 @@ frontend/
 │   └── assets/              # Product images
 │       ├── laptop.jpg
 │       ├── headphones.jpg
-│       ├── mouse.jpg
 │       ├── keyboard.jpg
+│       ├── mouse.jpg
+│       ├── souris.webp
 │       ├── monitor.jpg
-│       └── webcam.jpg
+│       ├── webcam.jpg
+│       ├── speaker.jpg
+│       ├── external-hdd.jpg
+│       ├── docking-station.jpg
+│       ├── gaming-headset.jpg
+│       ├── graphic-tablet.jpg
+│       └── smartphone-x.jpg
 │
 ├── src/
 │   ├── api/                 # API client layer
@@ -67,6 +78,8 @@ frontend/
 │   │
 │   ├── pages/               # Page components
 │   │   ├── ProductListPage.jsx
+│   │   ├── ProductDetailPage.jsx    
+│   │   ├── ProductDetailPage.css
 │   │   ├── CartPage.jsx
 │   │   ├── CartPage.css
 │   │   └── product-grid.css
@@ -99,6 +112,7 @@ frontend/
 - **Low Stock Badges**: Visual warning when stock < 5
 - **Hover Effects**: Image zoom and card elevation
 - **Stock Indicators**: "En stock" / "Indisponible"
+- **Click to View**: Navigate to detailed product page
 
 ### 2. Shopping Cart
 - **Add to Cart**: From product cards with toast notification
@@ -120,7 +134,40 @@ frontend/
 - **Success Feedback**: Toast with order ID
 - **Auto-redirect**: Returns to products after 2s
 
+### 5. Product Detail Pages
+- **Enhanced View**: Full-size product images with better visibility
+- **Comprehensive Information**: 
+  - Product name and pricing
+  - Stock availability status
+  - Detailed product description
+  - Technical specifications and features list
+- **Add to Cart**: Direct purchase option from detail page
+- **Similar Products Section**: 
+  - Related product recommendations at bottom
+  - Quick access to similar items
+  - Encourages product discovery
+- **Seamless Navigation**: 
+  - Click any product card to view details
+  - Easy return to product catalog
 ---
+
+## 🛣️ Routing Structure
+
+```javascript
+// App.jsx Routes
+<Routes>
+  <Route path="/" element={<ProductListPage />} />
+  <Route path="/product/:id" element={<ProductDetailPage />} />
+  <Route path="/cart" element={<CartPage />} />
+</Routes>
+```
+### Navigation Flow
+```
+Product List → Click Product → Product Detail → Add to Cart → Cart Page
+     ↑              ↓                  ↓                          ↓
+     └──────────────┴──────────────────┴──────────────────────────┘
+                    (Seamless navigation between pages)
+```
 
 ## 🔧 State Management
 
@@ -148,7 +195,18 @@ const CartContext = createContext({
   stock: Number         // Available stock
 }
 ```
-
+### Product Structure
+```javascript
+{
+  id: Number,           // Product ID
+  name: String,         // Product name
+  description: String,  // Detailed description
+  price: Number,        // Product price
+  stock: Number,        // Available quantity
+  image: String,        // Image URL
+  features: Array       // List of product features
+}
+```
 ### State Flow
 ```
 User Action → Component → Hook → Context → Update State → Re-render
@@ -209,7 +267,6 @@ The app will open at http://localhost:5173
 - [ ] Order history page
 - [ ] Product search/filter
 - [ ] Sort options (price, name, stock)
-- [ ] Product details page
 - [ ] Wishlist feature
 - [ ] Multiple images per product
 - [ ] Reviews and ratings
@@ -239,3 +296,5 @@ The app will open at http://localhost:5173
 ---
 
 **Maintained by**: Tasnim Touati  
+**Last Updated**: January 2026  
+**Version**: 1.0.0
