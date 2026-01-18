@@ -1,56 +1,65 @@
 // src/pages/ProductListPage.jsx
 import { useEffect, useState } from "react";
 import ProductCard from "../components/ProductCard";
-import "./ProductListPage.css"; // We'll create this
+import "./ProductListPage.css";
 
 const ProductListPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const res = await fetch("http://localhost:3001/api/products");
+      
+      if (!res.ok) {
+        throw new Error(`Erreur HTTP: ${res.status}`);
+      }
+
+      const data = await res.json();
+      console.log("Données reçues de l'API:", data); // DEBUG
+
+      // Gère les différents formats de réponse possibles
+      let productsArray = [];
+      
+      if (Array.isArray(data)) {
+        // Format direct: [products]
+        productsArray = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        // Format: { data: [products] }
+        productsArray = data.data;
+      } else if (data.products && Array.isArray(data.products)) {
+        // Format: { products: [products] }
+        productsArray = data.products;
+      } else {
+        console.error("Format de réponse inattendu:", data);
+        throw new Error("Format de données invalide reçu du serveur");
+      }
+
+      setProducts(productsArray);
+      setLoading(false);
+    } catch (err) {
+      console.error("Erreur lors du chargement:", err);
+      setError(err.message || "Impossible de charger les produits");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetch("http://localhost:3001/api/products")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Erreur lors de la récupération des produits");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "Impossible de charger les produits");
-        setLoading(false);
-      });
+    fetchProducts();
   }, []);
 
   const onStockUpdate = (updatedProduct) => {
     setProducts((prev) =>
-      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)),
+      prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
     );
   };
 
   const handleRetry = () => {
-    setLoading(true);
-    setError(null);
-
-    fetch("http://localhost:3001/api/products")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Erreur lors de la récupération des produits");
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setProducts(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message || "Impossible de charger les produits");
-        setLoading(false);
-      });
+    fetchProducts();
   };
 
   // Loading state with spinner
@@ -77,11 +86,14 @@ const ProductListPage = () => {
   }
 
   // Empty state (if no products)
-  if (products.length === 0) {
+  if (!Array.isArray(products) || products.length === 0) {
     return (
       <div className="page-state-container">
         <div className="empty-icon">📦</div>
         <p className="state-message">Aucun produit disponible</p>
+        <button className="retry-button" onClick={handleRetry}>
+          🔄 Actualiser
+        </button>
       </div>
     );
   }

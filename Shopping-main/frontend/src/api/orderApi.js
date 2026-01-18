@@ -1,33 +1,24 @@
 // src/api/orderApi.js
 import axios from "axios";
 
-/**
- * Sends order data to the backend to get a preview
- * (prices, totals, validation) without creating the order.
- *
- * @param {Object} payload - Order data (cart items, user info, etc.)
- * @returns {Promise<Object>} Preview result from the backend
- */
+const API_URL = "http://localhost:3001/api/orders";
 
 export const previewOrder = async (payload) => {
-  const res = await axios.post(
-    "http://localhost:3001/api/orders/preview",
-    payload,
-  );
-  return res.data;
+  try {
+    const res = await axios.post(`${API_URL}/preview`, payload);
+    return res.data;
+  } catch (error) {
+    console.error("Error previewing order:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
-/**
- * Submits the final order to the backend
- * This actually creates the order in the database.
- *
- * @param {Object} payload - Final order data
- * @returns {Promise<Object>} Created order response
- */
 export const submitOrder = async (payload) => {
-  const res = await axios.post(
-    "http://localhost:3001/api/orders/create",
-    payload,
-  );
-  return res.data;
+  try {
+    const res = await axios.post(API_URL, payload); // ← IMPORTANT : pas de "/create"
+    return res.data;
+  } catch (error) {
+    console.error("Error submitting order:", error.response?.data || error.message);
+    throw error;
+  }
 };

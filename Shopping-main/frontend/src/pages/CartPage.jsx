@@ -10,55 +10,64 @@ const CartPage = () => {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, clearCart } = useCart();
 
-  // Order preview data from backend (totals, item subtotals)
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [removingId, setRemovingId] = useState(null); // For animation when removing item
+  const [removingId, setRemovingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Stock dialog states
   const [showStockDialog, setShowStockDialog] = useState(false);
   const [stockIssues, setStockIssues] = useState([]);
 
-  // Preview order effect - runs when cart changes (NO STOCK VALIDATION HERE)
+  // Preview order effect
   useEffect(() => {
     if (cart.length === 0) {
       setOrder(null);
       return;
     }
 
-    setLoading(true);
-    previewOrder({
-      cart: cart.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-      })),
-    })
-      .then((data) => {
-        setOrder(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        // Fallback: create a manual order preview if API returns stock issues
-        if (err.response?.data?.stockIssues) {
-          // Calculate total manually for display
-          let total = 0;
-          const items = cart.map((item) => {
-            const subTotal = item.price * item.quantity;
-            total += subTotal;
-            return {
-              productId: item.id,
-              name: item.name,
-              price: item.price,
-              quantity: item.quantity,
-              subTotal,
-            };
-          });
-          setOrder({ items, total });
+    const fetchPreview = async () => {
+      setLoading(true);
+      try {
+        const data = await previewOrder({
+          cart: cart.map((item) => ({
+            productId: item.id,
+            quantity: item.quantity,
+          })),
+        });
+
+        console.log("Preview data:", data); // DEBUG
+
+        // Gère différents formats de réponse
+        const orderData = data.data || data;
+        setOrder(orderData);
+      } catch (err) {
+        console.error("Preview error:", err);
+
+        // Fallback: calcul manuel si l'API échoue
+        let total = 0;
+        const items = cart.map((item) => {
+          const subTotal = item.price * item.quantity;
+          total += subTotal;
+          return {
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            subTotal,
+          };
+        });
+        setOrder({ items, total });
+
+        // Affiche un toast seulement si ce n'est pas un problème de stock
+        if (!err.response?.data?.stockIssues) {
+          toast.error("Impossible de calculer le total", { duration: 2000 });
         }
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchPreview();
   }, [cart]);
 
   const handleRemove = (productId) => {
@@ -73,7 +82,6 @@ const CartPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Try to submit order
       const orderData = await submitOrder({
         cart: cart.map((item) => ({
           productId: item.id,
@@ -81,42 +89,41 @@ const CartPage = () => {
         })),
       });
 
-      toast.success(`Commande confirmée! N° ${orderData.orderId}`, {
+      // Gère différents formats de réponse
+      const order = orderData.data || orderData;
+
+      toast.success(`Commande confirmée! N° ${order.orderId}`, {
         duration: 5000,
         icon: "✅",
       });
 
       clearCart();
 
-      // Redirect to home after 2 seconds
       setTimeout(() => {
         navigate("/");
       }, 2000);
     } catch (err) {
       console.error("Checkout error:", err);
 
-      // Show stock issues dialog if backend indicates insufficient stock
       if (err.response?.data?.stockIssues) {
         const issues = err.response.data.stockIssues;
         setStockIssues(issues);
         setShowStockDialog(true);
-        setIsSubmitting(false);
       } else {
         toast.error(
-          err.response?.data?.message || "Erreur lors de la commande",
+          err.response?.data?.message || "Erreur lors de la commande"
         );
-        setIsSubmitting(false);
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Proceed with available quantities when some items are out of stock
   const handleProceedWithAvailable = async () => {
     setShowStockDialog(false);
     setIsSubmitting(true);
 
     try {
-      // Create new cart with adjusted quantities
       const adjustedCart = cart
         .map((item) => {
           const issue = stockIssues.find((i) => i.productId === item.id);
@@ -131,14 +138,12 @@ const CartPage = () => {
             quantity: item.quantity,
           };
         })
-        .filter((item) => item.quantity > 0); // Remove items with 0 stock
+        .filter((item) => item.quantity > 0);
 
-      // Submit order with adjusted quantities
-      const orderData = await submitOrder({
-        cart: adjustedCart,
-      });
+      const orderData = await submitOrder({ cart: adjustedCart });
+      const order = orderData.data || orderData;
 
-      toast.success(`Commande confirmée! N° ${orderData.orderId}`, {
+      toast.success(`Commande confirmée! N° ${order.orderId}`, {
         duration: 5000,
         icon: "✅",
       });
@@ -155,21 +160,25 @@ const CartPage = () => {
     }
   };
 
-  // Cancel order confirmation dialog
   const handleCancelOrder = () => {
     setShowStockDialog(false);
     setStockIssues([]);
     setIsSubmitting(false);
   };
 
-  // Render loading state
-  if (loading)
+  // Loading state
+  if (loading) {
     return (
       <div className="cart-container">
-        <p>Chargement...</p>
+        <div className="page-state-container">
+          <div className="spinner"></div>
+          <p>Chargement du panier...</p>
+        </div>
       </div>
     );
+  }
 
+  // Empty cart
   if (!order || cart.length === 0) {
     return (
       <div className="cart-container">
@@ -188,7 +197,22 @@ const CartPage = () => {
     );
   }
 
-  // Render cart items and summary
+  // Vérifie que order.items existe
+  if (!order.items || !Array.isArray(order.items)) {
+    return (
+      <div className="cart-container">
+        <div className="page-state-container">
+          <div className="error-icon">⚠️</div>
+          <p className="error-message">Erreur de chargement du panier</p>
+          <button className="retry-button" onClick={() => window.location.reload()}>
+            🔄 Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Cart items
   return (
     <div className="cart-container">
       <div className="cart-header">
@@ -250,7 +274,7 @@ const CartPage = () => {
                   </button>
                 </div>
 
-                <p className="item-subtotal">{item.subTotal} €</p>
+                <p className="item-subtotal">{item.subTotal.toFixed(2)} €</p>
 
                 <button
                   onClick={() => handleRemove(item.productId)}
@@ -268,7 +292,7 @@ const CartPage = () => {
       <div className="cart-summary">
         <div className="total-row">
           <span>Total</span>
-          <span className="total-amount">{order.total} €</span>
+          <span className="total-amount">{order.total.toFixed(2)} €</span>
         </div>
         <button
           className="checkout-btn"
@@ -279,7 +303,6 @@ const CartPage = () => {
         </button>
       </div>
 
-      {/* Stock Validation Dialog */}
       {showStockDialog && (
         <div className="stock-dialog-overlay">
           <div className="stock-dialog">

@@ -1,4 +1,5 @@
-import { products } from "../data/products.js";
+// src/services/order.service.js
+import products from "../data/products.js";  // ← Changed this line
 
 // Calcule un aperçu de la commande sans modifier le stock
 export const calculateOrderPreview = (cart) => {

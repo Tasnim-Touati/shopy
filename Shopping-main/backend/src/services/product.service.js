@@ -1,12 +1,10 @@
-import {
-  findAllProducts,
-  decreaseStock
-} from "../repositories/product.repository.js";
+// src/services/product.service.js
+import products from "../data/products.js";  
 
-// Récupère tous les produits disponibles
 export const getAllProducts = () => {
-  return findAllProducts();
+  return products;
 };
 
-// Réexporte la fonction decreaseStock pour la rendre accessible
-export { decreaseStock };
+export const getProductById = (id) => {
+  return products.find(product => product.id === id || product.id === parseInt(id));
+};

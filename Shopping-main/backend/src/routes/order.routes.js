@@ -1,16 +1,41 @@
 import express from "express";
+import rateLimit from "express-rate-limit";
 import {
   previewOrderController,
   createOrderController,
 } from "../controllers/order.controller.js";
+import { validateOrderMiddleware } from "../validators/order.validator.js";
 
-// Crée un routeur Express pour les commandes
 const router = express.Router();
 
-// Route pour prévisualiser une commande (calcul sans validation finale)
-router.post("/preview", previewOrderController);
+// Rate limiter spécifique pour les commandes (plus restrictif)
+const orderLimiter = rateLimit({
+  windowMs: parseInt(process.env.ORDER_RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.ORDER_RATE_LIMIT_MAX_ORDERS) || 10,
+  message: "Trop de commandes depuis cette IP. Veuillez réessayer dans 15 minutes.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-// Route pour créer une commande (validation et mise à jour du stock)
-router.post("/create", createOrderController);
+/**
+ * POST /api/orders/preview
+ * Prévisualise une commande sans modifier le stock
+ */
+router.post(
+  "/preview",
+  validateOrderMiddleware,
+  previewOrderController
+);
+
+/**
+ * POST /api/orders
+ * Crée une nouvelle commande et met à jour le stock
+ */
+router.post(
+  "/",
+  orderLimiter,
+  validateOrderMiddleware,
+  createOrderController
+);
 
 export default router;

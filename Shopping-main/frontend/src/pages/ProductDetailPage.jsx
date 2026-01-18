@@ -12,26 +12,30 @@ const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
-    // Scroll to top when product changes
     window.scrollTo(0, 0);
 
     setLoading(true);
+    setImageError(false);
+    
     fetch(`http://localhost:3001/api/products/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Produit introuvable");
         return res.json();
       })
       .then((data) => {
-        setProduct(data);
+        // Gère différents formats de réponse
+        const productData = data.data || data;
+        setProduct(productData);
         setLoading(false);
       })
       .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
-  }, [id]); // Re-fetch when ID changes
+  }, [id]);
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -44,11 +48,26 @@ const ProductDetailPage = () => {
     navigate(`/product/${productId}`);
   };
 
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  // Fonction pour obtenir l'URL de l'image avec fallback
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return "/assets/placeholder.jpg";
+    // Si l'image commence déjà par /, on la retourne telle quelle
+    if (imagePath.startsWith("/")) return imagePath;
+    // Sinon on ajoute le /
+    return `/${imagePath}`;
+  };
+
   if (loading) {
     return (
       <div className="product-detail-container">
-        <div className="spinner"></div>
-        <p>Chargement...</p>
+        <div className="page-state-container">
+          <div className="spinner"></div>
+          <p>Chargement...</p>
+        </div>
       </div>
     );
   }
@@ -75,7 +94,17 @@ const ProductDetailPage = () => {
 
       <div className="product-detail-card">
         <div className="product-image-section">
-          <img src={product.image} alt={product.name} />
+          <img 
+            src={imageError ? "/assets/placeholder.jpg" : getImageUrl(product.image)} 
+            alt={product.name}
+            onError={handleImageError}
+            style={{ 
+              width: "100%", 
+              height: "100%", 
+              objectFit: "cover",
+              backgroundColor: "#f5f5f5" 
+            }}
+          />
 
           {product.stock < 5 && product.stock > 0 && (
             <span className="badge badge-warning">Dernières pièces!</span>
@@ -151,7 +180,13 @@ const ProductDetailPage = () => {
                 onClick={() => handleRelatedProductClick(relatedProduct.id)}
               >
                 <div className="related-product-image">
-                  <img src={relatedProduct.image} alt={relatedProduct.name} />
+                  <img 
+                    src={getImageUrl(relatedProduct.image)} 
+                    alt={relatedProduct.name}
+                    onError={(e) => {
+                      e.target.src = "/assets/placeholder.jpg";
+                    }}
+                  />
                   {relatedProduct.stock === 0 && (
                     <span className="related-out-of-stock">Rupture</span>
                   )}
