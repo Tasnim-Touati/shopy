@@ -1,11 +1,15 @@
 import { useCart } from "../hooks/useCart";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
   const { addToCart } = useCart();
 
   // Handle adding a product to the cart
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    // ← Add 'e' parameter
+    e.stopPropagation(); // Prevent card click when clicking button
     addToCart(product);
     toast.success(`${product.name} ajouté au panier!`, {
       icon: "🛒",
@@ -13,7 +17,11 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="card">
+    <div
+      className="card"
+      onClick={() => navigate(`/product/${product.id}`)} // ← Move here
+      style={{ cursor: "pointer" }} // ← Move here
+    >
       <div className="card-image-wrapper">
         <img src={product.image} alt={product.name} />
 

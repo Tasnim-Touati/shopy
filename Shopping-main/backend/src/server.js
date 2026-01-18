@@ -8,7 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Monte les routes des produits sur /api/products
 app.use("/api/products", productRoutes);
+
+// Monte les routes des commandes sur /api/orders
 app.use("/api/orders", orderRoutes);
 
 app.listen(3001, () => {
